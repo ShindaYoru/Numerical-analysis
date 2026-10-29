@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 
 EPS = 0.001
 
-# Схема Горнера и границы корней
 
 def horner(coefs, c):
     len_coefs = len(coefs)
@@ -26,13 +25,12 @@ def upper_bound(coefs):
 def lower_bound(coefs):
     n = len(coefs) - 1
     coefs = coefs[:]
-    for i, a in enumerate(coefs):
+    for i in range(len(coefs)):
         if (n - i) % 2 == 1:
             coefs[i] *= -1
     return -upper_bound(coefs)
 
 
-# Отделение корней и метод итерации
 
 def find_intervals(f, a, b, h=0.1):
     intervals = []
@@ -52,7 +50,6 @@ def iterate(phi, x, eps):
         x = x_new                    
     return None
 
-# Уравнение 1: x^3 + 3x^2 + 6x - 1 = 0
 
 print("Уравнение 1: x^3 + 3x^2 + 6x - 1 = 0")
 
@@ -67,13 +64,12 @@ intervals1 = find_intervals(f1, low, up, 0.1)
 print(f"Отрезки с корнем: {intervals1}")
 
 # Итерационная форма: x = (1 - 3x^2 - x^3) / 6
+
 phi1 = lambda x: (1 - 3*x**2 - x**3) / 6
 
 a1, b1 = intervals1[0]
 root1, iters1 = iterate(phi1, (a1 + b1) / 2, EPS)
 print(f"Корень: x = {root1:.4f} (итераций: {iters1})\n")
-
-# Уравнение 2: x * 2^x = 1 
 
 print("Уравнение 2: x * 2^x = 1")
 
