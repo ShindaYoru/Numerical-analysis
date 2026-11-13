@@ -38,10 +38,10 @@ def find_intervals(f, a, b, h=0.1):
     return intervals
 
 
-def chord_method(f, d2f, a, b, eps):
+def chord_method(f, a, b, eps):
     for k in range(MAX_ITER):
         x = a - f(a) * (b - a) / (f(b) - f(a))
-        if(f(a) * d2f(a) > 0):
+        if(f(a) * second_derivative(f, a) > 0):
             step = abs(x - b)
             b = x
         else:
@@ -52,31 +52,35 @@ def chord_method(f, d2f, a, b, eps):
     return x, MAX_ITER
 
 
-def start_point(f, d2f, a, b):
-    if(f(a) * d2f(a) > 0):
+def start_point(f, a, b):
+    if(f(a) * derivative(f, a) > 0):
         return a
     return b
 
 
-def tangent_method(f, df, x0, eps):
+def tangent_method(f, x0, eps):
     x = x0
     for k in range(MAX_ITER):
-        x_new = x - f(x) / df(x)
+        x_new = x - f(x) / derivative(f, x)
         if(abs(x_new - x) < eps):
             return x_new, k + 1
         x = x_new
     return x, MAX_ITER
 
+def derivative(f, x, h=1e-5):
+    return (f(x+h) - f(x-h))/(2*h)
 
+def second_derivative(f, x, h=1e-5):
+    return (f(x + h) - 2*f(x) + f(x - h)) / h**2
 
-def combined_method(f, df, d2f, a, b, eps):
+def combined_method(f, a, b, eps):
     for k in range(MAX_ITER):
         x_chord = a - f(a) * (b - a) / (f(b) - f(a))
-        if(f(a) * d2f(a) > 0):
-            x_tan = a - f(a) / df(a)
+        if(f(a) * second_derivative(f, a) > 0):
+            x_tan = a - f(a) / derivative(f, a)
             a, b = x_tan, x_chord
         else:
-            x_tan = b - f(b) / df(b)
+            x_tan = b - f(b) / derivative(f, b)
             a, b = x_chord, x_tan
         if(abs(b - a) < eps):
             return (a + b) / 2, k + 1
@@ -87,14 +91,13 @@ def combined_method(f, df, d2f, a, b, eps):
 print("а) x + lg(x) = 0.5")
 
 f_a = lambda x: x + np.log10(x) - 0.5
-d2f_a = lambda x: -1 / (x**2 * math.log(10))
 
 
 intervals_a = find_intervals(f_a, 0.1, 10)
 print(f"Отрезки с корнем: {intervals_a}")
 
 a_a, b_a = intervals_a[0]
-root_a, iters_a = chord_method(f_a, d2f_a, a_a, b_a, EPS)
+root_a, iters_a = chord_method(f_a, a_a, b_a, EPS)
 print(f"Корень (метод хорд): x = {root_a:.4f} (итераций: {iters_a}), f(x) = {f_a(root_a):.2e}\n")
 
 
@@ -107,17 +110,15 @@ up_b = upper_bound(coefs_b)
 print(f"Границы корней: [{low_b}, {up_b}]")
 
 f_b = lambda x: x**3 + x - 3
-df_b = lambda x: 3 * x**2 + 1
-d2f_b = lambda x: 6 * x
 
 intervals_b = find_intervals(f_b, low_b, up_b)
 print(f"Отрезки с корнем: {intervals_b}")
 
 a_b, b_b = intervals_b[0]
-x0_b = start_point(f_b, d2f_b, a_b, b_b)
+x0_b = start_point(f_b, a_b, b_b)
 print(f"Начальное приближение: {x0_b:.1f}")
 
-root_b, iters_b = tangent_method(f_b, df_b, x0_b, EPS)
+root_b, iters_b = tangent_method(f_b, x0_b, EPS)
 print(f"Корень (метод касательных): x = {root_b:.4f} (итераций: {iters_b}), f(x) = {f_b(root_b):.2e}\n")
 
 
@@ -130,12 +131,11 @@ up_c = upper_bound(coefs_c)
 print(f"Границы корней: [{low_c}, {up_c}]")
 
 f_c = lambda x: x**3 - 4 * x**2 + 2
-df_c = lambda x: 3 * x**2 - 8 * x
-d2f_c = lambda x: 6 * x - 8
+
 
 intervals_c = find_intervals(f_c, low_c, up_c)
 print(f"Отрезки с корнями: {intervals_c}")
 
 a_c, b_c = intervals_c[0]
-root_c, iters_c = combined_method(f_c, df_c, d2f_c, a_c, b_c, EPS)
+root_c, iters_c = combined_method(f_c, a_c, b_c, EPS)
 print(f"Корень (комбинированный метод): x = {root_c:.4f} (итераций: {iters_c}), f(x) = {f_c(root_c):.2e}")
